@@ -11,18 +11,11 @@ function createSquare(height, width, depth, color, material)
   return cube;
 }
 
-function createBackground(texture)
+function createBackground()
 {
   var material = new THREE.MeshBasicMaterial( { color: "white", opacity: 0.0 } );
   material.transparent = true;
   var background = createSquare(window_height, window_width * 3, 5, "", material);
-
-  texture.repeat.set((window_width * 3) / 1024, window_height / 1024);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-
-  background.material.map = texture;
-
   return background;
 }
 

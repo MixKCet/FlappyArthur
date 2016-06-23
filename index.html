@@ -27,7 +27,7 @@
       <div id="credits">
         <span>Created by Miles Hunt with help from Kaillan Reukers</span>
       </div>
-      <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+      <script src="./jquery-3.0.0.min.js"></script>
       <script src="./three.js"></script>
       <script src="./animations.js"></script>
       <script src="./controls.js"></script>
@@ -70,7 +70,6 @@
 
         // load textures
         var loader = new THREE.TextureLoader();
-        var background_texture = loader.load('background.png');
         var top_pipe_texture = loader.load('top_pipe.png');
         var bot_pipe_texture = loader.load('bottom_pipe.png');
         var arthur_texture = loader.load('arthur_noears.png');
@@ -113,7 +112,7 @@
         // scene.add(ears);
 
         // setup bacground
-        var background = createBackground(background_texture);
+        var background = createBackground();
         scene.add(background);
 
         // setup foreground
