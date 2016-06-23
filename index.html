@@ -1,0 +1,305 @@
+<html> 
+  <head> 
+    <title>FLAPPY ARTHUR</title> 
+    <style>
+      #message_div { position: absolute; top: 50px; font-size: 4em; margin: auto; text-align: center; }
+      #score   { position: absolute; top: 0; left: 0; font-size: 4em; }
+      canvas { width: 100%; height: 100%; }
+      #append { background-image: url("bg.png"); background-position: bottom; background-repeat: repeat-x; background-color: #0099CC;}
+      div { margin: 0; padding: 0; }
+      body { background-color: #ffffff; color: #f2eeb3; overflow: hidden; margin: 0; padding: 0; cursor: hand; }
+      #ground { width: 100%; height: 110px; position: absolute; bottom: 0; left: 0; background-color: "black"; 
+                background-image: url("ground.png"); background-position: bottom; background-repeat: repeat-x; }
+      #credits { position: absolute; right: 10px; bottom: 10px; color: #010101;}
+      }
+    </style> 
+    <meta charset="UTF-8">
+  </head> 
+    <body>
+      <div id="message_div">
+      </div>
+      <span id="score">Score: 0</span>
+      <div id="append">
+        <!-- <h1>Flappy Arthur</h1> -->
+      </div>
+      <div id="ground">
+      </div>
+      <div id="credits">
+        <span>Created by Miles Hunt with help from Kaillan Reukers</span>
+      </div>
+      <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+      <script src="./three.js"></script>
+      <script src="./animations.js"></script>
+      <script src="./controls.js"></script>
+      <script src="./objects.js"></script>
+      <script src='THREEx.WindowResize.js'></script>
+      <script>
+        // setup div
+        var div = document.getElementById( 'append' );
+
+        // setup game constants
+        var ARTHUR_STARTING_X = 0;    // Where on the screen horizontal does Arthur start?
+        var ARTHUR_STARTING_Y = 0;    // Same, but height (0 = middle)
+        var FPS_CAP           = 60; 
+        var CONSTANT_DRAG     = 50;   // How fast do we accelerate down per second?
+        var TERMINAL_VELOCITY = -500; // At what point do we stop falling faster?
+        var JUMP_ACCELERATION = 400;  // How fast are we after a jump?
+        var COLUMN_GEN_SPEED  = 2;    // How quickly are columns generated (in seconds)?
+        var COLUMN_MOVE_SPEED = 300;  // How fast do columns move?
+        var ARTHUR_WIDTH      = 100;
+        var ARTHUR_HEIGHT     = 0;
+        var COLUMN_WIDTH      = 100;
+
+        var COL_GEN_SPEED_UP  = 0.1; // Each second, increase the GEN_SPEED by this amount
+        var COL_MOVE_SPEED_UP = 50;  // How much do we increase column speed per second?
+        var COLUMN_GAP_CLOSE  = 10;  // How much do we close the column gaps per second?
+        var GAP_P_INCREASE    = 5;   // How much we increase the gap percentage per second?
+
+        var ABSOLUTE_GEN_SPEED = 0.5; // What is the minimum time between columns?
+
+        var MAX_GAP           = 700;  // Starting MAX SIZE for column gaps
+        var MIN_GAP           = 400;  // Starting MIN SIZE for column gaps
+        var ABSOLUTE_MIN_GAP  = 200;  // Absolute MIN SIZE for column gaps
+        var GAP_PERCENTAGE    = 50;   // Max: 50, Min: 0
+
+        var WON_SCORE         = 100;   // At what score do we win?
+
+        var START_MESSAGE     = "ARE YOU READY FOR FLAPPY ARTHUR?";
+        var WON_MESSAGE       = "WHAT? HOLY SH*T! GOOD JOB!";
+        var LOST_MESSAGE      = "AWWW ARTHUR'S DEAD";
+
+        // load textures
+        var loader = new THREE.TextureLoader();
+        var background_texture = loader.load('background.png');
+        var top_pipe_texture = loader.load('top_pipe.png');
+        var bot_pipe_texture = loader.load('bottom_pipe.png');
+        var arthur_texture = loader.load('arthur_noears.png');
+        var ear_texture    = loader.load('up_ear.png');
+        var noear_texture  = loader.load('lower_ear.png')
+
+        // setup scene + camera
+        var window_width = window.innerWidth;
+        var window_height = window.innerHeight - 110;
+        var scene  = new THREE.Scene();
+        var camera = new THREE.OrthographicCamera(window_width / - 2, window_width / 2, window_height / 2, window_height / - 2, 0, 10);
+        scene.add(camera);
+
+        // setup renderer + add to DIV
+        var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window_width, window_height);
+        renderer.setClearColor(0x404040, 1);
+        renderer.shadowMapEnabled = true;
+        renderer.setClearColor( 0xffffff, 0);
+        div.appendChild(renderer.domElement); 
+        
+        THREEx.WindowResize(renderer, camera);
+
+        // setup light
+        var light = new THREE.PointLight(0xffffff);
+        light.position.set(-100,200,100);
+        scene.add(light);
+
+        // setup clock
+        var clock = new THREE.Clock();
+
+        // setup arthurs
+        var arthur = createArthur(arthur_texture);
+        var ears   = createEars(noear_texture);
+        arthur.add(ears);
+        ears.position.x += ARTHUR_WIDTH / 6;
+        ears.position.y += ARTHUR_WIDTH / 6;
+        ears.position.z += 1;
+        scene.add(arthur);
+        // scene.add(ears);
+
+        // setup bacground
+        var background = createBackground(background_texture);
+        scene.add(background);
+
+        // setup foreground
+        var foreground = createForeground();
+        scene.add(foreground);
+
+        // setup columns
+        var columns = []
+
+        // setup variables
+        var gameover            = false;
+        var score               = 0
+        var cdt                 = 0;
+        var arthur_acceleration = 0;
+        var scored_columns      = [];
+        var seconds             = COLUMN_GEN_SPEED;
+        var current_col_gen_speed  = COLUMN_GEN_SPEED;
+        var current_col_move_speed = COLUMN_MOVE_SPEED;
+        var current_gap_percentage = GAP_PERCENTAGE;
+        var current_max_gap = MAX_GAP;
+        var current_min_gap = MIN_GAP;
+        var ear_flap_animation  = { "start": false, "current": 0, "finish": 0.15 };
+
+        arthur.position.y       = ARTHUR_STARTING_Y;
+        arthur.position.x       = ARTHUR_STARTING_X;
+
+        // setup 'fresh' game
+        resetGame();
+
+        // pause and show 'start screen'
+        showStartScreen();
+
+        // start our scene
+        clock.start();
+        animate();
+
+        function render() 
+        {
+          renderer.render(scene, camera); 
+        }
+
+        function animateFrame(dt)
+        {   
+          // console.log(dt);
+          if (!gameover)
+          {
+            // animations
+            if (ear_flap_animation.start == true)
+            {            
+              ear_flap_animation.current += dt;
+              console.log(ear_flap_animation.current);
+              if (ear_flap_animation.current >= ear_flap_animation.finish)
+              {
+                console.log("end animation");
+                ear_flap_animation.start = false;
+                ear_flap_animation.current = 0;
+                ears.material.map = noear_texture;
+              }
+            }
+
+            // update difficulty variables
+            current_col_gen_speed  -= COL_GEN_SPEED_UP * dt;
+            if (current_col_gen_speed < ABSOLUTE_GEN_SPEED)
+            {
+              current_col_gen_speed = ABSOLUTE_GEN_SPEED;
+            }
+
+            current_col_move_speed += COL_MOVE_SPEED_UP * dt;
+            current_gap_percentage -= GAP_P_INCREASE * dt;
+            if (current_gap_percentage < 0)
+            {
+              current_gap_percentage = 0;
+            }
+            current_max_gap -= COLUMN_GAP_CLOSE * dt;
+            current_min_gap -= COLUMN_GAP_CLOSE * dt;
+            if (current_max_gap < ABSOLUTE_MIN_GAP)
+            {
+              current_max_gap = ABSOLUTE_MIN_GAP;
+            }
+            if (current_min_gap < ABSOLUTE_MIN_GAP)
+            {
+              current_min_gap = ABSOLUTE_MIN_GAP;
+            }
+
+
+            arthur_acceleration -= CONSTANT_DRAG;
+            if (arthur_acceleration < TERMINAL_VELOCITY)
+            {
+              arthur_acceleration = TERMINAL_VELOCITY;
+            }
+            moveArthur(arthur, dt);
+
+            seconds += dt;
+            if (seconds >= current_col_gen_speed)
+            {
+              var gap_height   = (Math.random() * (current_max_gap - current_min_gap + 1)) + current_min_gap;
+              var max = 100 - current_gap_percentage;
+              var top_fraction = ((Math.random() * (max - current_gap_percentage + 1)) + current_gap_percentage) / 100;
+              var bot_fraction = 1 - top_fraction;
+
+              var topColumn = createColumn(true, (window_height - (gap_height / 2)) * top_fraction, top_pipe_texture);
+              var botColumn = createColumn(false, (window_height - (gap_height / 2)) * bot_fraction, bot_pipe_texture);
+
+              columns.push(topColumn);
+              columns.push(botColumn);
+              scene.add(topColumn);
+              scene.add(botColumn);
+              seconds = 0;
+            }
+
+            moveColumns(columns, dt);
+            for (var i = 0; i < columns.length; i++)
+            {
+              if ((columns[i].position.x + (COLUMN_WIDTH/2)) < (arthur.position.x - (ARTHUR_WIDTH/2)))
+              {
+                if (columns[i].position.y > 0 && scored_columns.indexOf(columns[i]) < 0)
+                {
+                  scored_columns.push(columns[i]);
+                  score += 1;
+                  $("#score").text("Score: " + score);
+                }
+              }
+            }
+
+            for (var i = 0; i < columns.length; i++)
+            {
+              var remove = checkRemoveColumn(columns[i]);
+              if (remove)
+              {
+                if (columns[i].position.y > 0)
+                {
+                  scored_columns.splice(0, 1);
+                }
+                scene.remove(columns[i]);
+                columns.splice(i, 1);
+              }
+            }
+
+            if (score >= WON_SCORE)
+            {
+              showWonScreen();
+              gameover = true;
+            }
+
+            var collision = isCollision(arthur, columns);
+            if (collision)
+            {
+              showGameoverScreen();
+              gameover = true;
+            }
+          }
+        }
+
+        function animate() 
+        {
+          var dt = clock.getDelta();
+          // cdt += dt;
+          // console.log(cdt);
+          // if (cdt > (1 / FPS_CAP))
+          // {
+            // cdt = 0;
+            animateFrame(dt);
+          // }
+
+          render();
+          requestAnimationFrame(animate);
+        }
+
+        // make our labels unselectable
+        $.fn.extend({ 
+          disableSelection: function() { 
+            this.each(function() { 
+              if (typeof this.onselectstart != 'undefined') {
+                this.onselectstart = function() { return false; };
+              } else if (typeof this.style.MozUserSelect != 'undefined') {
+                this.style.MozUserSelect = 'none';
+              } else {
+                this.onmousedown = function() { return false; };
+              }
+            }); 
+          } 
+        });
+
+        $(document).ready(function() {
+          $('body').disableSelection();
+        });
+      </script>
+    </body> 
+</html>   
