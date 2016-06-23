@@ -294,7 +294,7 @@
         (function($) {
           var count = 0;
           $.fn.nodoubletapzoom = function() {
-              $(this).bind('touchstart', function preventZoom(e){
+              $(this).bind('touchstart', function preventZoom(e) {
                   var t2 = e.timeStamp;
                   var t1 = $(this).data('lastTouch') || t2;
                   var dt = t2 - t1;
@@ -305,7 +305,7 @@
                   }
                   e.preventDefault(); // double tap - prevent the zoom
                   // also synthesize click events we just swallowed up
-                  $(e.target).trigger('click');
+                  $(e.target).trigger('tap');
               });
           };
         })(jQuery);
