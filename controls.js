@@ -1,6 +1,17 @@
 document.onkeydown = handleKeyDown;
 document.onmousedown = handleMouseDown;
 
+$("body").on("tap", function() {
+	if (gameover)
+	{
+		resetGame();
+	}
+	else
+	{
+		jumpArthur()
+	}
+});
+
 function jumpArthur()
 {
 	ear_flap_animation.start = true;
