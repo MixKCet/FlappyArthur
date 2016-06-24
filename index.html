@@ -8,9 +8,9 @@
       #append { position: absolute; background-image: url("bg.png"); background-position: bottom; background-repeat: repeat-x; background-color: #0099CC;}
       div { margin: 0; padding: 0; }
       body { background-color: #260126; color: #f2eeb3; overflow: hidden; margin: 0; padding: 0; cursor: hand; }
-      #ground { height: 110px; position: absolute; background-color: "black"; 
+      #ground { height: 298px; position: absolute; background-color: "black"; 
                 background-image: url("ground.png"); background-position: bottom; background-repeat: repeat-x; }
-      #credits { position: absolute; bottom: 10px; color: #010101; font-size: 2vh;}
+      #credits { position: absolute; bottom: 10px; color: #010101; font-size: 2vh; font-size: 10px; }
       *::selection 
       {
           background-color:transparent;
@@ -56,17 +56,20 @@
         // phone resolution
         // (h x w)
         // 790 x 480
-        var phone_height = 800;
+        var phone_height = 600;
         var phone_width  = 480;
         var phone_ratio  = phone_width / phone_height;
 
         // setup div
         var div = document.getElementById( 'append' );
 
-        var pref_distance = window.innerHeight - window.innerWidth * (phone_height / phone_width);
-        if (pref_distance > 110)
+        console.log("height", window.innerHeight)
+        console.log("width", window.innerWidth)
+        var pref_distance = window.innerHeight - (window.innerWidth * (phone_height / phone_width));
+        console.log("pref distance", pref_distance)
+        if (pref_distance > 298)
         {
-          pref_distance = 110;
+          pref_distance = 298;
         }
         if (pref_distance < 60)
         {
@@ -76,8 +79,8 @@
         var window_height = window.innerHeight - pref_distance;
         var window_width  = parseInt(window_height * (phone_width / phone_height), 10);
 
-        console.log(window_height)
-        console.log(window_width)
+        console.log("window_height", window_height);
+        console.log("window_width", window_width);
 
 
         var canvas_top    = 0;
@@ -101,7 +104,7 @@
 
 
         // setup game constants
-        var ARTHUR_STARTING_X = 0;    // Where on the screen horizontal does Arthur start?
+        var ARTHUR_STARTING_X = -100; // Where on the screen horizontal does Arthur start?
         var ARTHUR_STARTING_Y = 0;    // Same, but height (0 = middle)
         var FPS_CAP           = 60; 
         var CONSTANT_DRAG     = 20;   // How fast do we accelerate down per second?
