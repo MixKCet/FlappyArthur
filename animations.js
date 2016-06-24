@@ -1,3 +1,14 @@
+function modifyHTML()
+{
+	$('#score').css("left",  canvas_left);
+	$('#append').css("width", window_width);
+	$('#append').css("left",  canvas_left);
+	$('#ground').css("width", window_width);
+	$('#ground').css("left",  canvas_left);
+	$('#credits').css("width", window_width);
+	$('#credits').css("left",  canvas_left + 10);
+}
+
 function showStartScreen()
 {
 	gameover = true;
@@ -7,8 +18,9 @@ function showStartScreen()
     $("#message_div").append("<span>"+START_MESSAGE+"</span>");
     $("#message_div").append("<br/>");
     $("#message_div").append("- CLICK TO START -");
-    $("#message_div").css("top",  (window.innerHeight - $("#message_div").height()) / 2); 
-    $("#message_div").css("left", (window.innerWidth - $("#message_div").width()) / 2); 
+    $("#message_div").css("width", window_width);
+    $("#message_div").css("top",  canvas_top + (window_height - $("#message_div").height()) / 2); 
+    $("#message_div").css("left", canvas_left + (window_width - $("#message_div").width()) / 2); 
     $("#message_div").show();
 }
 
@@ -75,7 +87,7 @@ function resetGame()
 
 function checkRemoveColumn(column)
 {
-	if (column.position.x + (COLUMN_WIDTH/2) < -(window_width / 2))
+	if (column.position.x + (COLUMN_WIDTH/2) < -(phone_width / 2))
 	{
 		return true;
 	}
@@ -84,12 +96,12 @@ function checkRemoveColumn(column)
 
 function isCollision(arthur, columns)
 {
-	if ((arthur.position.y - (ARTHUR_HEIGHT/2)) > (window_height / 2))
+	if ((arthur.position.y - (ARTHUR_HEIGHT/2)) > (phone_height / 2))
 	{
 		return true;
 	}
 
-	if ((arthur.position.y + (ARTHUR_HEIGHT/2)) < -(window_height / 2))
+	if ((arthur.position.y + (ARTHUR_HEIGHT/2)) < -(phone_height / 2))
 	{
 		return true;
 	}

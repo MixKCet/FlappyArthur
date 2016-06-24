@@ -15,7 +15,7 @@ function createBackground()
 {
   var material = new THREE.MeshBasicMaterial( { color: "white", opacity: 0.0 } );
   material.transparent = true;
-  var background = createSquare(window_height, window_width * 3, 5, "", material);
+  var background = createSquare(phone_height, phone_width * 3, 5, "", material);
   return background;
 }
 
@@ -23,20 +23,18 @@ function createForeground()
 {
   var material = new THREE.MeshBasicMaterial( { color: "black", opacity: 0.7 } );
   material.transparent = true;
-  var foreground = createSquare(2000, 2000, 1, "", material);
+  var foreground = createSquare(phone_height + 20, phone_width + 20, 1, "", material);
   return foreground;
 }
 
 function createEars(texture)
 {
-  var ratio = 158 / 463;
-
   var material = new THREE.MeshBasicMaterial( { color: "white", opacity: 1 } );
   material.transparent = true;
 
   var height = ARTHUR_HEIGHT;
 
-  var ears = createSquare(height, height * ratio, 1, "", material);
+  var ears = createSquare(EARS_HEIGHT, EARS_WIDTH, 1, "", material);
 
   ears.material.map = texture;
   return ears;
@@ -44,12 +42,9 @@ function createEars(texture)
 
 function createArthur(texture)
 {
-  var ratio = 490 / 963;
-
   var material = new THREE.MeshBasicMaterial( { color: "white", opacity: 1 } );
   material.transparent = true;
 
-  ARTHUR_HEIGHT = ARTHUR_WIDTH * ratio;
   var arthur = createSquare(ARTHUR_HEIGHT, ARTHUR_WIDTH, 2, "", material);
   arthur.material.map = texture;
   return arthur;
@@ -57,27 +52,23 @@ function createArthur(texture)
 
 function createColumn(top, height, texture)
 {
-  var ratio = 118 / 600;
-
   var material = new THREE.MeshBasicMaterial( { color: "white", opacity: 1 } );
   material.transparent = true;
 
   var column = null;
-  column = createSquare(window_height, window_height * ratio, 3, "", material);
+  column = createSquare(COLUMN_HEIGHT, COLUMN_WIDTH, 3, "", material);
   column.material.map = texture;
 
-  column.position.x = (window_width / 2) + COLUMN_WIDTH;
+  column.position.x = (phone_width / 2) + COLUMN_WIDTH;
 
-  var visible_height = (window_height / 2) - height;
-  // console.log(visible_height);
-  // console.log(height);
+  var visible_height = (phone_height / 2) - height;
   if (top == true)
   {
-    column.position.y += (window_height / 2) + visible_height;
+    column.position.y += (phone_height / 2) + visible_height;
   }
   else
   {
-    column.position.y -= (window_height / 2) +   visible_height;
+    column.position.y -= (phone_height / 2) +   visible_height;
   }
   return column;
 }

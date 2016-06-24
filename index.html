@@ -2,15 +2,15 @@
   <head> 
     <title>FLAPPY ARTHUR</title> 
     <style>
-      #message_div { position: absolute; top: 50px; font-size: 4em; margin: auto; text-align: center; }
-      #score   { position: absolute; top: 0; left: 0; font-size: 4em; }
-      canvas { width: 100%; height: 100%; }
-      #append { background-image: url("bg.png"); background-position: bottom; background-repeat: repeat-x; background-color: #0099CC;}
+      #message_div { z-index: 99; position: absolute; font-size: 2em; margin: auto; text-align: center; }
+      #score   { z-index: 98; position: absolute; top: 0; font-size: 3em; }
+      canvas { height: 100%; width: 100%; }
+      #append { position: absolute; background-image: url("bg.png"); background-position: bottom; background-repeat: repeat-x; background-color: #0099CC;}
       div { margin: 0; padding: 0; }
-      body { background-color: #ffffff; color: #f2eeb3; overflow: hidden; margin: 0; padding: 0; cursor: hand; }
-      #ground { width: 100%; height: 110px; position: absolute; bottom: 0; left: 0; background-color: "black"; 
+      body { background-color: #260126; color: #f2eeb3; overflow: hidden; margin: 0; padding: 0; cursor: hand; }
+      #ground { height: 110px; position: absolute; bottom: 0; left: 0; background-color: "black"; 
                 background-image: url("ground.png"); background-position: bottom; background-repeat: repeat-x; }
-      #credits { position: absolute; right: 10px; bottom: 10px; color: #010101;}
+      #credits { position: absolute; bottom: 10px; color: #010101;}
       *::selection 
       {
           background-color:transparent;
@@ -51,39 +51,80 @@
       <script src="./animations.js"></script>
       <script src="./controls.js"></script>
       <script src="./objects.js"></script>
-      <script src='THREEx.WindowResize.js'></script>
+      <!-- <script src='THREEx.WindowResize.js'></script> -->
       <script>
+        // phone resolution
+        // (h x w)
+        // 790 x 480
+        var phone_height = 790;
+        var phone_width  = 480;
+        var phone_ratio  = phone_width / phone_height;
+
         // setup div
         var div = document.getElementById( 'append' );
+
+        var window_height = window.innerHeight - 110;
+        var window_width  = parseInt(window_height * phone_ratio, 10);
+
+        console.log(window_height)
+        console.log(window_width)
+
+
+        var canvas_top    = 0;
+        var canvas_bottom = 0;
+        var canvas_left   = (window.innerWidth / 2) - (window_width / 2);
+        var canvas_right  = (window.innerWidth / 2) + window_width;
+
+        modifyHTML();
+
+
+
+
+        var column_ratio  = 118 / 600;
+        var arthur_ratio  = 963 / 490;
+        var ears_ratio    = 158 / 463;
+
+        // 573
+        // 1273
+        // 60 drag
+
+
 
         // setup game constants
         var ARTHUR_STARTING_X = 0;    // Where on the screen horizontal does Arthur start?
         var ARTHUR_STARTING_Y = 0;    // Same, but height (0 = middle)
         var FPS_CAP           = 60; 
-        var CONSTANT_DRAG     = 50;   // How fast do we accelerate down per second?
-        var TERMINAL_VELOCITY = -500; // At what point do we stop falling faster?
-        var JUMP_ACCELERATION = 400;  // How fast are we after a jump?
-        var COLUMN_GEN_SPEED  = 2;    // How quickly are columns generated (in seconds)?
-        var COLUMN_MOVE_SPEED = 300;  // How fast do columns move?
-        var COLUMN_WIDTH      = 100;
+        var CONSTANT_DRAG     = 60;   // How fast do we accelerate down per second?
+        var TERMINAL_VELOCITY = -600; // At what point do we stop falling faster?
+        var JUMP_ACCELERATION = 650;  // How fast are we after a jump?
+        var COLUMN_GEN_SPEED  = 1.5;  // How quickly are columns generated (in seconds)?
+        var COLUMN_MOVE_SPEED = 200;  // How fast do columns move?
+        var COLUMN_HEIGHT     = (phone_height);
+        var COLUMN_WIDTH      = (phone_height * column_ratio);
 
-        var COL_GEN_SPEED_UP  = 0.1; // Each second, increase the GEN_SPEED by this amount
-        var COL_MOVE_SPEED_UP = 50;  // How much do we increase column speed per second?
-        var COLUMN_GAP_CLOSE  = 10;  // How much do we close the column gaps per second?
-        var GAP_P_INCREASE    = 5;   // How much we increase the gap percentage per second?
+        var COL_GEN_SPEED_UP  = 0.1;  // Each second, increase the GEN_SPEED by this amount
+        var COL_MOVE_SPEED_UP = 30;   // How much do we increase column speed per second?
+        var COLUMN_GAP_CLOSE  = 30;   // How much do we close the column gaps per second?
+        var GAP_P_INCREASE    = 0.01; // How much we increase the gap percentage per second?
 
         var ABSOLUTE_GEN_SPEED = 0.5; // What is the minimum time between columns?
 
-        var MAX_GAP           = 700;  // Starting MAX SIZE for column gaps
-        var MIN_GAP           = 400;  // Starting MIN SIZE for column gaps
-        var ABSOLUTE_MIN_GAP  = 200;  // Absolute MIN SIZE for column gaps
-        var GAP_PERCENTAGE    = 50;   // Max: 50, Min: 0
+        var MAX_GAP           = 300;  // Starting MAX SIZE for column gaps
+        var MIN_GAP           = 200;  // Starting MIN SIZE for column gaps
+        var ABSOLUTE_MIN_GAP  = 100;  // Absolute MIN SIZE for column gaps
+        var GAP_PERCENTAGE    = 80;   // Max: 50, Min: 0
 
         var WON_SCORE         = 100;   // At what score do we win?
 
         var START_MESSAGE     = "ARE YOU READY FOR FLAPPY ARTHUR?";
         var WON_MESSAGE       = "WHAT? HOLY SH*T! GOOD JOB!";
         var LOST_MESSAGE      = "AWWW ARTHUR'S DEAD";
+
+        var ARTHUR_HEIGHT     = 80;
+        var ARTHUR_WIDTH      = ARTHUR_HEIGHT * arthur_ratio;
+
+        var EARS_HEIGHT       = ARTHUR_HEIGHT; 
+        var EARS_WIDTH        = EARS_HEIGHT * ears_ratio;
 
         // load textures
         var loader = new THREE.TextureLoader();
@@ -94,15 +135,9 @@
         var noear_texture  = loader.load('lower_ear.png')
 
         // setup scene + camera
-        var window_width = window.innerWidth;
-        var window_height = window.innerHeight - 110;
         var scene  = new THREE.Scene();
-        var camera = new THREE.OrthographicCamera(window_width / - 2, window_width / 2, window_height / 2, window_height / - 2, 0, 10);
+        var camera = new THREE.OrthographicCamera(phone_width / - 2, phone_width / 2, phone_height / 2, phone_height / - 2, 0, 10);
         scene.add(camera);
-
-
-        var ARTHUR_WIDTH      = (window_width / 8);
-        var ARTHUR_HEIGHT     = 0;
 
         // setup renderer + add to DIV
         var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -112,7 +147,7 @@
         renderer.setClearColor( 0xffffff, 0);
         div.appendChild(renderer.domElement); 
         
-        THREEx.WindowResize(renderer, camera);
+        // THREEx.WindowResize(renderer, camera);
 
         // setup light
         var light = new THREE.PointLight(0xffffff);
@@ -184,10 +219,8 @@
             if (ear_flap_animation.start == true)
             {            
               ear_flap_animation.current += dt;
-              console.log(ear_flap_animation.current);
               if (ear_flap_animation.current >= ear_flap_animation.finish)
               {
-                console.log("end animation");
                 ear_flap_animation.start = false;
                 ear_flap_animation.current = 0;
                 ears.material.map = noear_texture;
@@ -290,13 +323,7 @@
         function animate() 
         {
           var dt = clock.getDelta();
-          // cdt += dt;
-          // console.log(cdt);
-          // if (cdt > (1 / FPS_CAP))
-          // {
-            // cdt = 0;
-            animateFrame(dt);
-          // }
+          animateFrame(dt);
 
           render();
           requestAnimationFrame(animate);
