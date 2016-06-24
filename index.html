@@ -109,8 +109,8 @@
         var JUMP_ACCELERATION = 650;  // How fast are we after a jump?
         var COLUMN_GEN_SPEED  = 1.5;  // How quickly are columns generated (in seconds)?
         var COLUMN_MOVE_SPEED = 200;  // How fast do columns move?
-        var COLUMN_HEIGHT     = (phone_height);
-        var COLUMN_WIDTH      = (phone_height * column_ratio);
+        var COLUMN_HEIGHT     = phone_height - 100;
+        var COLUMN_WIDTH      = (COLUMN_HEIGHT * column_ratio);
 
         var COL_GEN_SPEED_UP  = 0.1;  // Each second, increase the GEN_SPEED by this amount
         var COL_MOVE_SPEED_UP = 30;   // How much do we increase column speed per second?
@@ -122,7 +122,7 @@
         var MAX_GAP           = 300;  // Starting MAX SIZE for column gaps
         var MIN_GAP           = 200;  // Starting MIN SIZE for column gaps
         var ABSOLUTE_MIN_GAP  = 100;  // Absolute MIN SIZE for column gaps
-        var GAP_PERCENTAGE    = 80;   // Max: 50, Min: 0
+        var GAP_PERCENTAGE    = 0;   // Max: 50, Min: 0
 
         var WON_SCORE         = 100;   // At what score do we win?
 
