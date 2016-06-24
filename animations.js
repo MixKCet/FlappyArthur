@@ -4,6 +4,7 @@ function modifyHTML()
 	$('#append').css("width", window_width);
 	$('#append').css("left",  canvas_left);
 	$('#ground').css("width", window_width);
+	$('#ground').css("top", window_height);
 	$('#ground').css("left",  canvas_left);
 	$('#credits').css("width", window_width);
 	$('#credits').css("left",  canvas_left + 10);

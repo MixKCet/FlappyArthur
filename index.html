@@ -2,15 +2,15 @@
   <head> 
     <title>FLAPPY ARTHUR</title> 
     <style>
-      #message_div { z-index: 99; position: absolute; font-size: 2em; margin: auto; text-align: center; }
-      #score   { z-index: 98; position: absolute; top: 0; font-size: 3em; }
+      #message_div { z-index: 99; position: absolute; font-size: 4vh; margin: auto; text-align: center; }
+      #score   { z-index: 98; position: absolute; top: 0; font-size: 4vh; }
       canvas { height: 100%; width: 100%; }
       #append { position: absolute; background-image: url("bg.png"); background-position: bottom; background-repeat: repeat-x; background-color: #0099CC;}
       div { margin: 0; padding: 0; }
       body { background-color: #260126; color: #f2eeb3; overflow: hidden; margin: 0; padding: 0; cursor: hand; }
-      #ground { height: 110px; position: absolute; bottom: 0; left: 0; background-color: "black"; 
+      #ground { height: 110px; position: absolute; background-color: "black"; 
                 background-image: url("ground.png"); background-position: bottom; background-repeat: repeat-x; }
-      #credits { position: absolute; bottom: 10px; color: #010101;}
+      #credits { position: absolute; bottom: 10px; color: #010101; font-size: 2vh;}
       *::selection 
       {
           background-color:transparent;
@@ -63,8 +63,18 @@
         // setup div
         var div = document.getElementById( 'append' );
 
-        var window_height = window.innerHeight - 110;
-        var window_width  = parseInt(window_height * phone_ratio, 10);
+        var pref_distance = window.innerHeight - window.innerWidth * (phone_height / phone_width);
+        if (pref_distance > 110)
+        {
+          pref_distance = 110;
+        }
+        if (pref_distance < 50)
+        {
+          pref_distance = 50;
+        }
+
+        var window_height = window.innerHeight - pref_distance;
+        var window_width  = parseInt(window_height * (phone_width / phone_height), 10);
 
         console.log(window_height)
         console.log(window_width)
