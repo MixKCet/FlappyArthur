@@ -277,8 +277,8 @@
               var top_fraction = ((Math.random() * (max - current_gap_percentage + 1)) + current_gap_percentage) / 100;
               var bot_fraction = 1 - top_fraction;
 
-              var topColumn = createColumn(true, (window_height - (gap_height / 2)) * top_fraction, top_pipe_texture);
-              var botColumn = createColumn(false, (window_height - (gap_height / 2)) * bot_fraction, bot_pipe_texture);
+              var topColumn = createColumn(true, (phone_height - (gap_height / 2)) * top_fraction, top_pipe_texture);
+              var botColumn = createColumn(false, (phone_height - (gap_height / 2)) * bot_fraction, bot_pipe_texture);
 
               columns.push(topColumn);
               columns.push(botColumn);
